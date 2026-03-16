@@ -16,6 +16,7 @@ import streamlit as st
 
 from prepare_data import load_data
 from evaluate import load_autoencoder_outputs, eval_autoencoder
+from evaluate import load_classic_metrics
 
 
 BASE = Path(__file__).resolve().parent.parent
@@ -110,3 +111,22 @@ with tab_auto:
         col1.metric("Precision (fraud)", f"{prec:.3f}")
         col2.metric("Recall (fraud)", f"{rec:.3f}")
         col3.metric("F1 (fraud)", f"{f1:.3f}")
+
+        st.markdown("---")
+        st.markdown("**Classic model reference (fixed threshold)**")
+        try:
+            classic = load_classic_metrics()
+            stats = classic["report"]["1"]
+            c_prec = stats["precision"]
+            c_rec = stats["recall"]
+            c_f1 = stats["f1-score"]
+            cc1, cc2, cc3 = st.columns(3)
+            cc1.metric("Classic precision (fraud)", f"{c_prec:.3f}")
+            cc2.metric("Classic recall (fraud)", f"{c_rec:.3f}")
+            cc3.metric("Classic F1 (fraud)", f"{c_f1:.3f}")
+            st.caption(
+                "Use the slider above to see when the autoencoder gets closer to or "
+                "beats these fixed classic-model metrics."
+            )
+        except FileNotFoundError:
+            st.caption("Classic metrics not found. Run `python src/train_classic.py` first.")
